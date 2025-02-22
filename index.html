@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>支付接口测试</title>
+    <!-- 引入 Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- 引入 Font Awesome 图标库 -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" rel="stylesheet">
+    <style>
+        /* 自定义样式 */
+        body {
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .container {
+            background-color: #ffffff;
+            padding: 2.5rem;
+            border-radius: 15px;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+            max-width: 450px;
+            width: 100%;
+        }
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: #333;
+            font-weight: 700;
+            font-size: 1.8rem;
+        }
+        .form-group {
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .form-group label {
+            font-weight: 600;
+            color: #555;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+        /* 文本框样式 */
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #ddd;
+            padding: 0.75rem 1rem 0.75rem 2.5rem;
+            font-size: 1rem;
+            line-height: 1.5;
+            height: calc(2.25rem + 2px);
+            transition: border-color 0.3s, box-shadow 0.3s;
+        }
+        .form-control:focus {
+            border-color: #007bff;
+            box-shadow: 0 0 8px rgba(0, 123, 255, 0.25);
+        }
+        /* 单选框组样式 */
+        .radio-group {
+            display: flex;
+            gap: 1.5rem;
+            align-items: center;
+            padding-left: 0; /* 移除左侧内边距 */
+        }
+        .radio-item {
+            display: flex;
+            align-items: center; /* 单选框和文字水平对齐 */
+            gap: 0.5rem;
+        }
+        .radio-item input[type="radio"] {
+            width: 1.2rem;
+            height: 1.2rem;
+            accent-color: #007bff; /* 单选框选中颜色 */
+            margin: 0; /* 移除默认的外边距 */
+            vertical-align: middle; /* 默认垂直对齐 */
+            transform: translateY(-2px); /* 微调圆点位置 */
+        }
+        /* 图标样式 */
+        .form-group i {
+            position: absolute;
+            left: 1rem;
+            top: 75%;
+            transform: translateY(-50%);
+            color: #777;
+            font-size: 1rem;
+            pointer-events: none;
+        }
+        /* 按钮样式 */
+        .btn-primary {
+            width: 100%;
+            padding: 0.75rem;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            background-color: #007bff;
+            border: none;
+            transition: background-color 0.3s, transform 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-primary i {
+            margin-right: 0.5rem;
+        }
+        .btn-primary:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+        .btn-primary:active {
+            transform: translateY(0);
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h2>支付</h2>
+    <div class="form-group">
+        <label for="orderId">客户订单号</label>
+        <i class="fas fa-receipt"></i>
+        <input type="text" id="orderId" class="form-control" value="20250222138092154">
+    </div>
+    <div class="form-group">
+        <label for="productName">商品名称</label>
+        <i class="fas fa-shopping-cart"></i>
+        <input type="text" id="productName" class="form-control" value="支付商点">
+    </div>
+    <div class="form-group">
+        <label for="amount">支付金额</label>
+        <i class="fas fa-dollar-sign"></i>
+        <input type="text" id="amount" class="form-control" value="0.01">
+    </div>
+    <!-- 支付方式改为单选框 -->
+    <div class="form-group">
+        <label>支付方式</label>
+        <div class="radio-group">
+            <label class="radio-item">
+                <input type="radio" name="paymentMethod" value="credit" checked>
+                信用卡
+            </label>
+        </div>
+    </div>
+    <!-- 接口方式改为单选框 -->
+    <div class="form-group">
+        <label>接口方式</label>
+        <div class="radio-group">
+            <label class="radio-item">
+                <input type="radio" name="interfaceType" value="jump" checked>
+                跳转
+            </label>
+            <label class="radio-item">
+                <input type="radio" name="interfaceType" value="direct">
+                直连
+            </label>
+        </div>
+    </div>
+
+    <button id="submitBtn" class="btn btn-primary">
+        <i class="fas fa-check"></i>
+        确认
+    </button>
+</div>
+
+<!-- 引入 Bootstrap JS（如果需要交互功能） -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    // 获取按钮和表单元素
+    const submitBtn = document.getElementById('submitBtn');
+    const orderId = document.getElementById('orderId');
+    const productName = document.getElementById('productName');
+    const amount = document.getElementById('amount');
+    const interfaceType = document.getElementById('interfaceType');
+    const paymentMethod = document.getElementById('paymentMethod');
+    // 生成唯一订单号的函数
+    function generateOrderId() {
+        const timestamp = Date.now().toString(); // 获取当前时间戳
+        const randomNum = Math.floor(Math.random() * 10000).toString().padStart(4, '0'); // 生成4位随机数
+        return timestamp + randomNum; // 拼接时间戳和随机数
+    }
+    // 雪花算法生成器
+    class Snowflake {
+        constructor(machineId = 0) {
+            this.machineId = machineId; // 机器ID
+            this.sequence = 0; // 序列号
+            this.lastTimestamp = -1; // 上次生成ID的时间戳
+        }
+        // 生成ID
+        nextId() {
+            let timestamp = Date.now();
+            if (timestamp === this.lastTimestamp) {
+                // 同一毫秒内生成多个ID
+                this.sequence = (this.sequence + 1) & 4095; // 12位序列号，最大4095
+                if (this.sequence === 0) {
+                    // 序列号用尽，等待下一毫秒
+                    timestamp = this.waitNextMillis(timestamp);
+                }
+            } else {
+                this.sequence = 0; // 新的一毫秒，重置序列号
+            }
+            this.lastTimestamp = timestamp;
+            // 生成ID
+            const id =
+                (BigInt(timestamp) << 22n) | // 时间戳左移22位
+                (BigInt(this.machineId) << 12n) | // 机器ID左移12位
+                BigInt(this.sequence); // 序列号
+
+            return id.toString(); // 返回字符串形式的ID
+        }
+        // 等待下一毫秒
+        waitNextMillis(timestamp) {
+            while (timestamp <= this.lastTimestamp) {
+                timestamp = Date.now();
+            }
+            return timestamp;
+        }
+    }
+    // 初始化雪花算法生成器
+    const snowflake = new Snowflake(1); // 机器ID为1
+    // 页面加载时生成订单号
+    document.addEventListener('DOMContentLoaded', () => {
+        const orderIdInput = document.getElementById('orderId');
+        orderIdInput.value = snowflake.nextId(); // 使用雪花算法生成订单号
+    });
+
+    // 添加点击事件监听器
+    submitBtn.addEventListener('click', () => {
+        // 构造请求数据
+        const requestData = {
+            pid: generateRandomValue('Int'), // IRPID
+            method: 'credit', // 端口类型
+            type: 'bank', // 支付方式
+            out_trade_no: orderId.value, // 用户订单号
+            notify_url: 'http://www.psy.com/notify_url.php', // 开户通知地址
+            return_url: 'http://www.psy.com/return_url.php', // 系统通知地址
+            name: productName.value, // 商品名称
+            money: amount.value, // 商品金额
+            clientip: '192.168.1.100', // 用户IP地址
+            timestamp: generateRandomValue('Timestamp'), // 当前时间戳
+            sign_type: 'RSA', // 签名类型
+            // 以下字段根据需求可选
+            device: 'pc', // 设备类型
+            param: '', // 总资产管理费
+            auth_code: '', // 验证支付授权码
+            sub_openId: '', // 用户OpenId
+            sub_sppId: '', // 公众号AppId
+            sign: '' // 签名（需根据规则生成）
+        };
+
+        // 创建 XMLHttpRequest 对象
+        const xhr = new XMLHttpRequest();
+        xhr.open('POST', 'https://www.welltop.top/api/pay/create', true);
+        xhr.setRequestHeader('Content-Type', 'application/json');
+
+        // 处理响应
+        xhr.onload = function () {
+            if (xhr.status >= 200 && xhr.status < 300) {
+                console.log('响应数据:', JSON.parse(xhr.responseText));
+                alert('请求成功！');
+            } else {
+                console.error('请求失败:', xhr.statusText);
+                alert('请求失败，请检查控制台日志。');
+            }
+        };
+
+        // 处理网络错误
+        xhr.onerror = function () {
+            console.error('网络错误');
+            alert('网络错误，请检查您的连接。');
+        };
+
+        // 发送请求
+        xhr.send(JSON.stringify(requestData));
+    });
+</script>
+</body>
+</html>
