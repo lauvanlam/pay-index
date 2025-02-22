@@ -222,6 +222,17 @@
         const orderIdInput = document.getElementById('orderId');
         orderIdInput.value = snowflake.nextId(); // 使用雪花算法生成订单号
     });
+    // 生成随机值
+    function generateRandomValue(type) {
+        if (type === 'Int') {
+            return Math.floor(Math.random() * 10000); // 随机整数
+        } else if (type === 'String') {
+            return Math.random().toString(36).substring(2, 15); // 随机字符串
+        } else if (type === 'Timestamp') {
+            return Math.floor(Date.now() / 1000); // 当前时间戳
+        }
+        return '';
+    }
 
     // 添加点击事件监听器
     submitBtn.addEventListener('click', () => {
@@ -249,7 +260,7 @@
 
         // 创建 XMLHttpRequest 对象
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://www.welltop.top/api/pay/create', true);
+        xhr.open('POST', 'https://www.skpayapp.com/api/pay/create', true);
         xhr.setRequestHeader('Content-Type', 'application/json');
 
         // 处理响应
