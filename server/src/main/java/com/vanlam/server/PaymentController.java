@@ -19,12 +19,16 @@ import java.nio.charset.StandardCharsets;
 @RequestMapping("/api")
 public class PaymentController {
 
+    String url = "https://mpay.skpayapp.com/api/pay/create";
+    String privateKey = "MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCjlX4lUscf82Bp45Do5W/OPMooTvZAoWj1WCHTEFepbUaIhA/qHUG3IEk8cxaZtgckVbh97Nux36t2+/WwNm+gCo41hKoS3EAGeW/g5YpbgJX3wcOSaZ9jhP17vb21CcZfQUNCWcjDMnBoEctqU2CyqZWdrnzA7D/96JlbPxqYdHiTIPz0NHqwOromamhKDxpg+A09MiByqlraDOKd9qNeX1o/5fMmnX9aBvAXZmMqX5mZdQaMuzZLAQPeT0n4HLFjHb/HTTl4lx1Ug/uoanFAywjtL63/6OXiYqm8GjionJdq7FY5CfeEh75I3UdEpKg/ZWKV4YP+YCV4Y1evHKJvAgMBAAECggEAXzCGj0F0DeuZlwSNNnkMbn6BRKNuOH20jdATHrbLzBOCj74JZLpRmzZ2Z26xIBEEZuhayywhS4hURpCnjzqeCgsaZZolPYRc3Wec6smnkUdp/RoLrA86aLbiqjbnRYnCnXtkoB+O68dWEbkJHX4XLt/v6Cm4/qp7Mk0/sBEwcLWnqi28vffVlYiPigGd5p8sbgcosVEQCN2t0+soKiGxt8zex+zyYv8PqHrpZkmitj2J38ll8tv7tQFWHCTGclhOagm1KE1N64cuKPhHXBNSxX/Py3saJYwfnCaegvPrLWjhe8yX4VAP9JK2WKliPDUDR9e4mM22KJl1CDyCRd7WAQKBgQDND6HaYLVQCdWE7aG5FEdLm0q/xfN+Rpig2KyYGMwHU+EVnAPR2BXo51k2tDplrygk7HdrYc/muqcq00alX95T/3azmEi9XkMvDnWea8/msqgTfmWv//CqmlzWnoKwTgN08HmaLPMsbfTrgpRvkV9oC8BF5EZc5dJqEKQTbp9UzwKBgQDMODkdPBeM8Xvj2GFOwjt2ZYZ7+BC1cDutUiNdcRG4K8xcc6/nF/VIvlQHP34zuMIPreGyLW4jyiedc0BC6mq3zwDKOTRYfhKrvDZREhthoNyE52KvNsIC1o+pRVDD5q5NCHNastX3QRaJO64bKrXC09HKJkJjrwfeFfKkocqAYQKBgHsyEg4NncBpOBM1ZLy5lx+wO1c9iMzrgtTXd9GkzCb22LpP0eenR3p2Sx3XZ2Ihuh98xT4JNIssxjOvXLkMAJk8WEcLjV/fmsNRj45OvUefO+UCQftb623DcVUrQ97B78e4lYXvzWR65vL6r0zb7JKoxKn4u+Eh3akFOF3ITwb3AoGAGprwheiAQPJs64ATHUmcqY4MeTYWJy0Z+TiMNu42GsJJ+3lu3zJ12CZDmDYjYOWfEp/amXXltW/uvUp4gr87a/rh5XaSZTz3fbwlb2Zmfs+QKxhh+OWvXONLEAhhv0PcTVjefmByE6Y9I1/NDOkBiQJDgIx/dbEl2z8Mv3n8gcECgYEAo+1I69Y3V9zfab2IPBw1BPvLKnRuBgQkt5kyAESHA4hL/xixysqggr1r8o+KqMXxTtuN0ch1Im5RnpIFKjZGMMlIkdHE/FwcRxilXIgnw7nosKkOQdhiS1BS3+uazlshLsQadSJ8eePX9mJTBrjGR9SMdf4CgAOVI2Ks9KKQzeg="; // 替换为实际私钥
+    String pid = "2019";
+
     @Autowired
     private RestTemplate restTemplate;
 
     @PostMapping(value = "/pay", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public String createPayment(@ModelAttribute PaymentRequest paymentDetails) throws Exception {
-        String url = "https://www.skpayapp.com/api/pay/create";
+
 
         // 获取并编码所有非空请求参数
         Map<String, String> params = new HashMap<>();
@@ -34,7 +38,7 @@ public class PaymentController {
         addEncodedParam(params, "type", paymentDetails.getType());
         params.put("timestamp", String.valueOf(System.currentTimeMillis() / 1000)); // 时间戳无需编码
         addEncodedParam(params, "method", paymentDetails.getMethod());
-        addEncodedParam(params, "pid", paymentDetails.getPid());
+        addEncodedParam(params, "pid", pid);
         addEncodedParam(params, "notify_url", paymentDetails.getNotify_url());
         addEncodedParam(params, "return_url", paymentDetails.getReturn_url());
         addEncodedParam(params, "clientip", paymentDetails.getClientip());
@@ -45,7 +49,7 @@ public class PaymentController {
 
         StringBuilder signStringBuilder = new StringBuilder();
         for (String key : keys) {
-            if (signStringBuilder.length() > 0) {
+            if (!signStringBuilder.isEmpty()) {
                 signStringBuilder.append("&");
             }
             signStringBuilder.append(key).append("=").append(params.get(key));
@@ -53,7 +57,6 @@ public class PaymentController {
         String signString = signStringBuilder.toString();
 
         // 生成RSA签名
-        String privateKey = "MIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQDXFHnRqbFr3Visi62SIUIYDNzQs01LP1LzkhoYTuqZCLOrerkTJLU5tiTRrEhL1K6c9f45sXxXk3KHUDo8BsBjk1oJzMnBFmYZ3h/uYcEq9khu3elD4YvHOy5AeLtx74h+4KWeo7Kzt3NfHVE6NTnAO4GsCKqYopmzjqgNuWq7qz5NVekx+JIvxWT2xUQHOzEpktjy0cZjz9jcITedDlZHNuaACPJWBbxajQgD1JkGylmelJA81vHQK2zfouXVo5fq0++wdiLkJwboWMwyib6yV46CbuxPm+3Iuq7IwaXBjZsA/cNay/cIYlbsAW4JDM5WAH8WUvDW3ivPx5hymRXnAgMBAAECggEACeUIQawD3Il/VdjLMGjVSJP26KcHDEoqf8gd6TZgNpAe6+mmcAoFSFVn1jmNzedH7TKn8nGG3eSLpUv8kdxhp3MU9lR0h6yHH/OHFolqwJY5+Ne+rn/G1XCUjSTAwtoZNnURSX4Qb5Il/Z80qG/ga0aRjZ+McZ8xYQBUHOWF0oJVn42b6UHQpreRCZDc2wfLc0Tr6L2Iecb1XX767YF+bE2aPExhvw/15bYZ24VfqnghfJpDvlSnQ2Yj/SBX/RDSxxxuf28gJCzvSZddendzg9ERhiW2WOfU3G8wIr9FB1JReimjLx7lU1IAEDQ/RdbdZwX0x/xvWjk5bbkbrE/s6QKBgQD+O5TZWOeqtcZDvevQJayiRYOIxwPAvy9oa3VO20LdlfOgtSpHAy1sStusxHxHdWXJhVcOXXXXHPownV9HfZBqcTmyetB0I83gPgn3g/TCm2H7T03n54ZETmPckh91JL9U8H1jK23QMjmR5whlw/diet7CtUgRYsK+IM8njPGFrQKBgQDYkzhnfDL13ak5Efg9H71jEo7qeqXBxkxzzEI/JyPeFzxvJsYKuS9ZASxtBoV5Z0uaeugPR7LSLvR+IBpCGSxoqXkoaxY5Cs6KY3BHaHQKq9b6ma3BBX2GeQ+0PwFOiP4YLEHEvNGsuCim8cHNFMJGa7N0uJCpDlZieuA1VyB0YwKBgQDs9GWAyr9qOfAoFW0j3OlxeW7mXe+eh9NM9NMqg2xoESo4wII+G7ULeR4UgjH/fGk5kcEZT3zU2VpLU3KJtHuU6iFHu/ZsOS7a8ZfijafkdmS1ki3flshrA9FJtRwC2BRIu7lyY/j/EsDbv0TxbNw3eqQDQGmCYtV11iieCVzXJQKBgH2AwtzlUjq8WwYhbbMuI3e4F2216Txjh4ZLRdCHA/f9ix32YClyqwdu8Km1b7+splk9BCFmsS+v2isEu3K2V8/G9dkARX6Ezq/PdA9NboGIlyndyJzka5tzqDARmtZB+M1VSD+UFAV9KsGjs2T+tJ5OZ04qblopXtHu1uLSPJJ1AoGBAITyAhxwGX6MmjMszmAIu8b0OCcoczvP9V2vMG1C3VOURez2xkQGYRY8wMSbLjTa7O7DLCcU3NDU4ZmVoVuMFugFzjfZNX9iqAiYjNI+YXzkRoKBah9WhcBiYOwLCRw0THOktN/J5CNB1recUlr+0QRGPB6Lxp6vlpZpkqffcv7c"; // 替换为实际私钥
         Signature signature = Signature.getInstance("SHA256WithRSA");
         signature.initSign(getPrivateKeyFromString(privateKey));
         signature.update(signString.getBytes(StandardCharsets.UTF_8)); // 明确指定UTF-8
@@ -61,7 +64,7 @@ public class PaymentController {
 
         // 构建请求体
         MultiValueMap<String, String> formData = new LinkedMultiValueMap<>();
-        params.forEach((k, v) -> formData.add(k, v));
+        params.forEach(formData::add);
         formData.add("sign", sign);
         formData.add("sign_type", "RSA");
 
@@ -75,7 +78,7 @@ public class PaymentController {
 
     private void addEncodedParam(Map<String, String> params, String key, String value) throws Exception {
         if (value != null) {
-            String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8.toString());
+            String encodedValue = URLEncoder.encode(value, StandardCharsets.UTF_8);
             params.put(key, encodedValue);
         }
     }
